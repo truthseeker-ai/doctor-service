@@ -1,15 +1,27 @@
-// Slot.java
 package com.hospital.doctorservice.entity;
+
 import jakarta.persistence.*;
-import lombok.*;
+import lombok.Getter;
+import lombok.Setter;
+
 import java.time.LocalDate;
-@Entity @Table(name="slots")
-@Data @Builder @NoArgsConstructor @AllArgsConstructor
+
+@Entity
+@Getter
+@Setter
 public class Slot {
-    @Id @GeneratedValue(strategy=GenerationType.IDENTITY)
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    private Long doctorId;
+
     private LocalDate date;
-    private String time;      // e.g. "10:00-10:30"
+
+    private String time;
+
     private Boolean available;
+
+    @ManyToOne
+    @JoinColumn(name = "doctor_id")
+    private Doctor doctor;
 }

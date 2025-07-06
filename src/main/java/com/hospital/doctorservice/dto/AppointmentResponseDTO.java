@@ -4,8 +4,7 @@ import lombok.Builder;
 import lombok.Data;
 import java.time.LocalDate;
 
-@Data
-@Builder
+@Data @Builder
 public class AppointmentResponseDTO {
     private Long id;
     private Long patientId;
