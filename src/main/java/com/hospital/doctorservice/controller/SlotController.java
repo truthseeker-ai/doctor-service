@@ -8,34 +8,42 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
-@RequestMapping("/api/doctors")
+@RequestMapping("/api/doctors/{doctorId}/slots")
 @RequiredArgsConstructor
 public class SlotController {
 
     private final SlotService svc;
 
-    @GetMapping("/{doctorId}/slots")
-    public ResponseEntity<List<SlotDTO>> listSlots(@PathVariable Long doctorId) {
-        return ResponseEntity.ok(svc.getSlots(doctorId));
+    @GetMapping
+    public List<SlotDTO> list(@PathVariable Long doctorId){
+        return svc.list(doctorId)
+                .stream()
+                .map(SlotDTO::fromEntity)
+                .collect(Collectors.toList());
     }
 
-    @PostMapping("/{doctorId}/slots")
-    public ResponseEntity<List<SlotDTO>> createSlots(
-            @PathVariable Long doctorId,
-            @RequestBody List<SlotDTO> slots) {
-        return new ResponseEntity<>(svc.createSlots(doctorId, slots), HttpStatus.CREATED);
+    @PostMapping
+    public ResponseEntity<SlotDTO> create(@PathVariable Long doctorId,
+                                          @RequestBody SlotDTO dto){
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(SlotDTO.fromEntity(svc.create(doctorId, dto)));
     }
 
-    // NEW: Delete a single slot
-    @DeleteMapping("/{doctorId}/slots/{slotId}")
-    public ResponseEntity<Void> deleteSlot(
-            @PathVariable Long doctorId,
-            @PathVariable Long slotId) {
+    @PutMapping("/{slotId}")
+    public ResponseEntity<SlotDTO> update(@PathVariable Long doctorId,
+                                          @PathVariable Long slotId,
+                                          @RequestBody SlotDTO dto){
+        return ResponseEntity.ok(
+                SlotDTO.fromEntity(svc.update(doctorId, slotId, dto)));
+    }
 
-        // (Optionally verify doctorId matches slot.doctorId)
-        svc.deleteSlot(slotId);
+    @DeleteMapping("/{slotId}")
+    public ResponseEntity<Void> delete(@PathVariable Long doctorId,
+                                       @PathVariable Long slotId){
+        svc.delete(doctorId, slotId);
         return ResponseEntity.noContent().build();
     }
 }

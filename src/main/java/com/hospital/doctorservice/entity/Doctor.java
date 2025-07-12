@@ -9,13 +9,10 @@ import lombok.*;
 public class Doctor {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
     private String firstName;
     private String lastName;
-
     @Column(unique = true)
     private String email;
-
     private String password;
     private String phone;
     private String specialization;

@@ -1,70 +1,46 @@
 package com.hospital.doctorservice.service;
 
 import com.hospital.doctorservice.dto.SlotDTO;
-import com.hospital.doctorservice.entity.Doctor;
 import com.hospital.doctorservice.entity.Slot;
-import com.hospital.doctorservice.repository.DoctorRepository;
 import com.hospital.doctorservice.repository.SlotRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 public class SlotService {
 
     private final SlotRepository repo;
-    private final DoctorRepository doctorRepo;
 
-    public List<SlotDTO> getSlots(Long doctorId) {
-        return repo.findByDoctorId(doctorId).stream()
-                .map(this::toDto)
-                .collect(Collectors.toList());
+    public List<Slot> list(Long doctorId){
+        return repo.findByDoctorId(doctorId);
     }
 
-    public List<SlotDTO> createSlots(Long doctorId, List<SlotDTO> slots) {
-        Doctor doctor = doctorRepo.findById(doctorId).orElseThrow();
-        List<Slot> toSave = slots.stream()
-                .map(dto -> {
-                    Slot s = new Slot();
-                    s.setDoctor(doctor);
-                    s.setDate(dto.getDate());
-                    s.setTime(dto.getTime());
-                    s.setAvailable(true);
-                    return s;
-                })
-                .collect(Collectors.toList());
-        return repo.saveAll(toSave).stream()
-                .map(this::toDto)
-                .collect(Collectors.toList());
+    public Slot create(Long doctorId, SlotDTO dto){
+        Slot s = Slot.builder()
+                .doctorId(doctorId)
+                .date(dto.getDate())
+                .time(dto.getTime())
+                .available(true)
+                .build();
+        return repo.save(s);
     }
 
-    public void deleteSlot(Long id) {
-        repo.deleteById(id);
+    public Slot update(Long doctorId, Long slotId, SlotDTO dto){
+        Slot s = repo.findById(slotId)
+                .filter(sl -> sl.getDoctorId().equals(doctorId))
+                .orElseThrow();
+        s.setDate(dto.getDate());
+        s.setTime(dto.getTime());
+        s.setAvailable(dto.getAvailable());
+        return repo.save(s);
     }
 
-    public List<SlotDTO> getAllSlots() {
-        return repo.findAll().stream()
-                .map(slot -> {
-                    SlotDTO dto = new SlotDTO();
-                    dto.setDoctorId(slot.getDoctor().getId());
-                    dto.setDate(slot.getDate());
-                    dto.setTime(slot.getTime());
-                    dto.setAvailable(slot.getAvailable());
-                    return dto;
-                })
-                .collect(Collectors.toList());
-    }
-
-    private SlotDTO toDto(Slot s) {
-        SlotDTO dto = new SlotDTO();
-        dto.setId(s.getId());
-        dto.setDoctorId(s.getDoctor().getId());
-        dto.setDate(s.getDate());
-        dto.setTime(s.getTime());
-        dto.setAvailable(s.getAvailable());
-        return dto;
+    public void delete(Long doctorId, Long slotId){
+        repo.findById(slotId)
+                .filter(sl -> sl.getDoctorId().equals(doctorId))
+                .ifPresent(repo::delete);
     }
 }
